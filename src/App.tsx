@@ -5,7 +5,10 @@ import NavBar from "./components/NavBar";
 import { BalldontlieAPI } from "@balldontlie/sdk";
 import Home from "./pages/Home";
 import Scores from "./pages/Scores";
+import Login from "./pages/Login";
+import Register from "./pages/Register1";
 import SupaBase from "./supabase-client";
+import Wrapper from "./pages/Wrapper";
 
 const api = new BalldontlieAPI({
   apiKey: "e7cb3934-1d84-4929-82ce-1d77033c10f9",
@@ -74,7 +77,18 @@ function App() {
       <main className="main-content">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/Scores" element={<Scores />} />
+          <Route
+            path="/Scores"
+            element={
+              <Wrapper>
+                <Scores />
+              </Wrapper>
+            }
+          />
+
+          <Route path="/Register" element={<Register />} />
+
+          <Route path="/Login" element={<Login />} />
         </Routes>
       </main>
     </>
