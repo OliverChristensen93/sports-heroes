@@ -11,6 +11,7 @@ interface PickedMatch {
 interface PicksContextType {
   picks: PickedMatch[];
   addPick: (pick: PickedMatch) => void;
+  resetPicks: () => void;
 }
 
 const PicksContext = createContext<PicksContextType | undefined>(undefined);
@@ -18,15 +19,24 @@ const PicksContext = createContext<PicksContextType | undefined>(undefined);
 export const PicksProvider = ({ children }: { children: React.ReactNode }) => {
   const [picks, setPicks] = useState<PickedMatch[]>([]);
 
-  const FetchPicks = async () => {
-    const { data, error } = await SupaBase.from("BetsList").select("*");
-    if (error) {
-      console.log("Error fetching from dataBase: ", error);
-    } else {
-      console.log("Fetching picks from database: ", data);
-      setPicks(data);
-    }
-  };
+  useEffect(() => {
+    const fetchPicks = async () => {
+      const {
+        data: { user },
+      } = await SupaBase.auth.getUser();
+
+      if (!user) return;
+
+      const { data, error } = await SupaBase.from("betsList")
+        .select("*")
+        .eq("user_id", user.id);
+
+      if (error) console.error(error);
+      else setPicks(data);
+    };
+
+    fetchPicks();
+  }, []);
 
   useEffect(() => {
     //FetchPicks();
@@ -52,8 +62,13 @@ export const PicksProvider = ({ children }: { children: React.ReactNode }) => {
     ]);
   };
 
+  const resetPicks = () => {
+    setPicks([]);
+    console.log("Picks have been reset. (Probably after a logout)");
+  };
+
   return (
-    <PicksContext.Provider value={{ picks, addPick }}>
+    <PicksContext.Provider value={{ picks, addPick, resetPicks }}>
       {children}
     </PicksContext.Provider>
   );

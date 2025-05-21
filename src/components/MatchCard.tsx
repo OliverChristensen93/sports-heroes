@@ -47,18 +47,20 @@ const MatchCard = ({
     .filter(Boolean)
     .join(" ");
 
-  //THIS CONSOLE LOG SEEMS TO RUN FOR EVERY MATCHCARD IN THE SCENE when I press on one? And it creates loooots of entries in the database, all (except for the one we pressed) which will give undefined on pickedHome.
-  console.log(
-    "DB - Setting pick for matchID: " +
-      id +
-      ". Picked homeTeam?: " +
-      pickedHomeTeam
-  );
+  const addPickDB = async (homeTeamPicked: boolean) => {
+    const {
+      data: { user },
+    } = await SupaBase.auth.getUser();
 
-  const addPickDB = async () => {
+    if (!user) {
+      //Maybe route the user to the login page here?
+      throw new Error("User not authenticated. Login before making picks");
+    }
+
     const NewPickData = {
       matchID: id,
-      pickedHome: pickedHomeTeam,
+      pickedHome: homeTeamPicked,
+      user_id: user.id,
     };
 
     const { data, error } = await SupaBase.from("BetsList")
@@ -86,7 +88,7 @@ const MatchCard = ({
         },
         timestamp: new Date().toISOString(),
       });
-      addPickDB();
+      addPickDB(true);
     }
   };
 
@@ -104,7 +106,7 @@ const MatchCard = ({
         },
         timestamp: new Date().toISOString(),
       });
-      addPickDB();
+      addPickDB(false);
     }
   };
 

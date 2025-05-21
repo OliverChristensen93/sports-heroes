@@ -3,11 +3,13 @@ import { Link, useNavigate } from "react-router-dom";
 import supabase from "../helper/supabaseClient";
 import type { User } from "@supabase/supabase-js";
 import "../App.css";
+import { usePicks } from "../contexts/PicksContext";
 
 const NavBar = () => {
   // Tell TypeScript this can be a User OR null
   const [user, setUser] = useState<User | null>(null);
   const navigate = useNavigate();
+  const { resetPicks } = usePicks();
 
   // Check auth state on mount
   useEffect(() => {
@@ -37,6 +39,8 @@ const NavBar = () => {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
 
+    console.log("Attempting to reset picks.");
+    resetPicks();
     navigate("/");
   };
 
@@ -73,12 +77,12 @@ const NavBar = () => {
             {/* Show when user is NOT logged in */}
             {!user && (
               <>
-                <li className="nav-right">
+                <li className="navbar-right">
                   <a className="nav-link" href="#">
                     <Link to="/Login">Login</Link>
                   </a>
                 </li>
-                <li className="nav-right">
+                <li className="navbar-right">
                   <a className="nav-link" href="#">
                     <Link to="/Register">Register</Link>
                   </a>
@@ -89,7 +93,7 @@ const NavBar = () => {
             {/* Show when user IS logged in */}
             {user && (
               <>
-                <li className="nav-right">
+                <li className="navbar-right">
                   <span>Hello, {user?.user_metadata?.username}</span>
                   <button onClick={signOut}>Sign out</button>
                 </li>
