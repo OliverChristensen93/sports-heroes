@@ -3,8 +3,14 @@ import { usePicks } from "../contexts/PicksContext";
 import MatchCard from "../components/MatchCard";
 import "../App.css";
 
-const Scores = () => {
+const MyPicks = () => {
   const { picks } = usePicks();
+
+  /*   const sortedPicks = [...picks].sort((a, b) => {
+    return new Date(b.matchSnapshot.startTime).getTime() - new Date(a.matchSnapshot.startTime).getTime();
+  }); 
+  
+    console.log(sortedPicks)*/
 
   return (
     <div className="wrapper">
@@ -41,4 +47,4 @@ const Scores = () => {
   );
 };
 
-export default Scores;
+export default MyPicks;

@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import supabase from "../helper/supabaseClient";
 import { Link, useNavigate } from "react-router-dom";
+import { usePicks } from "../contexts/PicksContext";
 
 const Login = () => {
+  const { fetchPicks } = usePicks();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -25,7 +27,8 @@ const Login = () => {
     }
 
     if (data) {
-      navigate("/Scores");
+      fetchPicks();
+      navigate("/MyPicks");
       return null;
     }
   };

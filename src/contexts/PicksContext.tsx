@@ -1,17 +1,26 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import SupaBase from "../supabase-client";
 
+interface Match {
+  id: number;
+  team1: string;
+  team2: string;
+  startTime: string;
+  team1Score?: number;
+  team2Score?: number;
+}
+
 interface PickedMatch {
   matchId: number;
   pickedHome: boolean;
-  matchSnapshot?: any; // Replace with proper Match type if available
-  timestamp?: string;
+  matchSnapshot?: Match; // Replace with proper Match type if available
 }
 
 interface PicksContextType {
   picks: PickedMatch[];
   addPick: (pick: PickedMatch) => void;
   resetPicks: () => void;
+  fetchPicks: () => void;
 }
 
 const PicksContext = createContext<PicksContextType | undefined>(undefined);
@@ -19,40 +28,41 @@ const PicksContext = createContext<PicksContextType | undefined>(undefined);
 export const PicksProvider = ({ children }: { children: React.ReactNode }) => {
   const [picks, setPicks] = useState<PickedMatch[]>([]);
 
+  const fetchPicks = async () => {
+    const {
+      data: { user },
+    } = await SupaBase.auth.getUser();
+    if (!user) return;
+
+    const { data: picksData, error } = await SupaBase.from("BetsList")
+      .select("matchID, pickedHome") // Add user_id if needed
+      .eq("user_id", user.id);
+
+    if (error) {
+      console.error("Error fetching picks:", error);
+      return;
+    }
+
+    // Fetch related matches
+    const matchIds = picksData.map((p) => p.matchID);
+    const { data: matches } = await SupaBase.from("MatchesList")
+      .select("*")
+      .in("matchID", matchIds);
+
+    const picks = picksData.map((pick) => ({
+      matchId: pick.matchID,
+      pickedHome: pick.pickedHome,
+      matchSnapshot: matches?.find((m) => m.matchID === pick.matchID),
+    }));
+    console.log("INTRO - Setting picks to:");
+    console.log(picks);
+    setPicks(picks);
+  };
+
+  //Run fetchPicks on load.
   useEffect(() => {
-    const fetchPicks = async () => {
-      const {
-        data: { user },
-      } = await SupaBase.auth.getUser();
-
-      if (!user) return;
-
-      const { data, error } = await SupaBase.from("betsList")
-        .select("*")
-        .eq("user_id", user.id);
-
-      if (error) console.error(error);
-      else setPicks(data);
-    };
-
     fetchPicks();
   }, []);
-
-  useEffect(() => {
-    //FetchPicks();
-    //How to fetch it from localStorage.
-    const stored = localStorage.getItem("picks");
-
-    //console.log("Loaded picks from storage:", stored);
-    if (stored) {
-      setPicks(JSON.parse(stored));
-    }
-  }, []);
-
-  useEffect(() => {
-    //console.log("Saving picks to localStorage:", picks);
-    localStorage.setItem("picks", JSON.stringify(picks));
-  }, [picks]);
 
   const addPick = (newPick: PickedMatch) => {
     // Avoid duplicates
@@ -68,7 +78,7 @@ export const PicksProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <PicksContext.Provider value={{ picks, addPick, resetPicks }}>
+    <PicksContext.Provider value={{ picks, addPick, resetPicks, fetchPicks }}>
       {children}
     </PicksContext.Provider>
   );

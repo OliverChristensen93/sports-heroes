@@ -70,7 +70,7 @@ const NavBar = () => {
             </li>
             <li className="nav-item">
               <a className="nav-link" href="#">
-                <Link to="/Scores">Scores</Link>
+                <Link to="/MyPicks">My Picks</Link>
               </a>
             </li>
 

@@ -4,7 +4,7 @@ import "./App.css";
 import NavBar from "./components/NavBar";
 import { BalldontlieAPI } from "@balldontlie/sdk";
 import Home from "./pages/Home";
-import Scores from "./pages/Scores";
+import MyPicks from "./pages/MyPicks";
 import Login from "./pages/Login";
 import Register from "./pages/Register1";
 import SupaBase from "./supabase-client";
@@ -78,10 +78,10 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route
-            path="/Scores"
+            path="/MyPicks"
             element={
               <Wrapper>
-                <Scores />
+                <MyPicks />
               </Wrapper>
             }
           />
