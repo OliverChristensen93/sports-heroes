@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { usePicks } from "../contexts/PicksContext";
 import SupaBase from "../supabase-client";
+import type { User } from "@supabase/supabase-js";
+import { useNavigate } from "react-router-dom";
 
 interface Props {
   id?: number;
@@ -26,6 +28,20 @@ const MatchCard = ({
   readOnly,
 }: Props) => {
   const { picks, addPick } = usePicks();
+  const navigate = useNavigate();
+  const [user, setUser] = useState<User | null>(null);
+  //Attempt to get user.
+  useEffect(() => {
+    const getUser = async () => {
+      const {
+        data: { user },
+      } = await SupaBase.auth.getUser();
+      setUser(user);
+    };
+
+    getUser();
+  }, []);
+
   const existingPick = picks.find((pick) => pick.matchId === id);
 
   const team1Won = team1Score > team2Score;
@@ -55,6 +71,7 @@ const MatchCard = ({
     if (!user) {
       //Maybe route the user to the login page here?
       throw new Error("User not authenticated. Login before making picks");
+      return;
     }
 
     const NewPickData = {
@@ -75,39 +92,47 @@ const MatchCard = ({
   };
 
   const handlePickTeam1 = () => {
-    if (!existingPick && id !== undefined) {
-      addPick({
-        matchId: id,
-        pickedHome: true,
-        matchSnapshot: {
-          team1,
-          team1Score,
-          team2,
-          team2Score,
-          startTime,
-        },
-        timestamp: new Date().toISOString(),
-      });
-      addPickDB(true);
+    if (user) {
+      if (!existingPick && id !== undefined) {
+        addPick({
+          matchId: id,
+          pickedHome: true,
+          matchSnapshot: {
+            team1,
+            team1Score,
+            team2,
+            team2Score,
+            startTime,
+          },
+          timestamp: new Date().toISOString(),
+        });
+        addPickDB(true);
+      }
     }
+    console.log("Navigate to login");
+    navigate("/Login");
   };
 
   const handlePickTeam2 = () => {
-    if (!existingPick && id !== undefined) {
-      addPick({
-        matchId: id,
-        pickedHome: false,
-        matchSnapshot: {
-          team1,
-          team1Score,
-          team2,
-          team2Score,
-          startTime,
-        },
-        timestamp: new Date().toISOString(),
-      });
-      addPickDB(false);
+    if (user) {
+      if (!existingPick && id !== undefined) {
+        addPick({
+          matchId: id,
+          pickedHome: false,
+          matchSnapshot: {
+            team1,
+            team1Score,
+            team2,
+            team2Score,
+            startTime,
+          },
+          timestamp: new Date().toISOString(),
+        });
+        addPickDB(false);
+      }
     }
+    console.log("Navigate to login");
+    navigate("/Login");
   };
 
   return (

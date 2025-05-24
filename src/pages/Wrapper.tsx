@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import supabase from "../helper/supabaseClient";
 import { Navigate } from "react-router-dom";
 
+//This component makes sure we are logged in before viewing children. Otherwise it redirects to "/Login".
+
 function Wrapper({ children }) {
   const [authenticated, setAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
